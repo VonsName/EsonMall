@@ -22,12 +22,12 @@ let proxyTable = config.dev.proxyTable;
 
 let app = express();
 
-let goodsData = require('../mock/goods.json');
+/*let goodsData = require('../mock/goods.json');
 let router = express.Router();
 router.get('/getGoods', function (req,res) {
   res.json(goodsData)
 });
-app.use(router);
+app.use(router);*/
 
 
 let compiler = webpack(webpackConfig);

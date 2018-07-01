@@ -123,7 +123,7 @@
       },
       methods:{
           getGoodsList(){
-            axios.get('/getGoods').then(res=>{
+            axios.get('/goods').then(res=>{
               let goods=res.data;
               this.goodsList=goods.result;
             })
