@@ -11,7 +11,7 @@
           <div class="filter-nav">
             <span class="sortby">Sort by:</span>
             <a href="javascript:void(0)" class="default cur">Default</a>
-            <a href="javascript:void(0)" class="price">Price <svg class="icon icon-arrow-short"><use xlink:href="#icon-arrow-short"></use></svg></a>
+            <a href="javascript:void(0)" class="price" @click="sortGoods">Price <svg class="icon icon-arrow-short"><use xlink:href="#icon-arrow-short"></use></svg></a>
             <a href="javascript:void(0)" class="filterby stopPop">Filter by</a>
           </div>
           <div class="accessory-result">
@@ -39,55 +39,22 @@
             <div class="accessory-list-wrap">
               <div class="accessory-list col-4">
                 <ul>
-                  <li>
+                  <li class="item" v-for="item in goodsList">
                     <div class="pic">
-                      <a href="#"><img v-lazy="'/static/1.jpg'" alt=""></a>
+                      <a href="#"><img v-bind:src="'/static/'+item.productImage" alt=""></a>
                     </div>
-                    <div class="main">
-                      <div class="name">XX</div>
-                      <div class="price">999</div>
-                      <div class="btn-area">
-                        <a href="javascript:;" class="btn btn--m">加入购物车</a>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="pic">
-                      <a href="#"><img v-lazy="'/static/2.jpg'" alt=""></a>
-                    </div>
-                    <div class="main">
-                      <div class="name">XX</div>
-                      <div class="price">1000</div>
-                      <div class="btn-area">
-                        <a href="javascript:;" class="btn btn--m">加入购物车</a>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="pic">
-                      <a href="#"><img src="/static/3.jpg" alt=""></a>
-                    </div>
-                    <div class="main">
-                      <div class="name">XX</div>
-                      <div class="price">500</div>
-                      <div class="btn-area">
-                        <a href="javascript:;" class="btn btn--m">加入购物车</a>
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="pic">
-                      <a href="#"><img src="/static/4.jpg" alt=""></a>
-                    </div>
-                    <div class="main">
-                      <div class="name">XX</div>
-                      <div class="price">2499</div>
+                    <div class="info">
+                      <div class="info-name">{{item.productName}}</div>
+                      <div class="info-price">{{item.salePrice}}</div>
                       <div class="btn-area">
                         <a href="javascript:;" class="btn btn--m">加入购物车</a>
                       </div>
                     </div>
                   </li>
                 </ul>
+                <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="20">
+                  加载中...
+                </div>
               </div>
             </div>
           </div>
@@ -108,7 +75,10 @@
       data(){
         return {
           goodsList:[],
-          priceChoose:'all'
+          sortFlag:true,
+          pageNum:1,
+          pageSize:8,
+          busy:true
         }
       },
         name: "GoodsList",
@@ -119,14 +89,44 @@
           NavBread:NavBread
         },
       mounted: function () {
-        this.getGoodsList();
+        this.getGoodsList(false);
       },
       methods:{
-          getGoodsList(){
-            axios.get('/goods').then(res=>{
+          getGoodsList(flag){
+            let param={
+              pageNum:this.pageNum,
+              pageSize:this.pageSize,
+              sort:this.sortFlag?1:-1
+            };
+            axios.get('/goods',{
+              params:param
+            }).then(res=>{
               let goods=res.data;
-              this.goodsList=goods.result;
+              if (flag){
+                this.goodsList=this.goodsList.concat(goods.result.list);
+                if (goods.result.count===0){
+                  this.busy=true;
+                }else {
+                  this.busy=false;
+                }
+              }else {
+                this.goodsList=goods.result.list;
+                this.busy=false;
+              }
+
             })
+          },
+          sortGoods(){
+            this.sortFlag=!this.sortFlag;
+            this.pageNum=1;
+            this.getGoodsList(false);
+          },
+          loadMore(){
+            this.busy=true;
+            setTimeout(() => {
+              this.pageNum++;
+              this.getGoodsList(true);
+            }, 500);
           }
       }
     }
