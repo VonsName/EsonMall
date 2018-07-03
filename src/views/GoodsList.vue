@@ -19,18 +19,18 @@
             <div class="filter stopPop" id="filter">
               <dl class="filter-price">
                 <dt>Price:</dt>
-                <dd><a href="javascript:void(0)">All</a></dd>
+                <dd><a href="javascript:void(0)" @click="setPriceFilter('all')" v-bind:class="{'cur':priceChecked==='all'}">All</a></dd>
                 <dd>
-                  <a href="javascript:void(0)">0 - 100</a>
+                  <a href="javascript:void(0)" @click="setPriceFilter('0')" v-bind:class="{'cur':priceChecked===0}">0 - 100</a>
                 </dd>
                 <dd>
-                  <a href="javascript:void(0)">100 - 500</a>
+                  <a href="javascript:void(0)" @click="setPriceFilter('1')" v-bind:class="{'cur':priceChecked===1}">100 - 500</a>
                 </dd>
                 <dd>
-                  <a href="javascript:void(0)">500 - 1000</a>
+                  <a href="javascript:void(0)" @click="setPriceFilter('2')" v-bind:class="{'cur':priceChecked===2}">500 - 1000</a>
                 </dd>
                 <dd>
-                  <a href="javascript:void(0)">1000 - 2000</a>
+                  <a href="javascript:void(0)" @click="setPriceFilter('3')" v-bind:class="{'cur':priceChecked===3}">1000 - 2000</a>
                 </dd>
               </dl>
             </div>
@@ -47,13 +47,13 @@
                       <div class="info-name">{{item.productName}}</div>
                       <div class="info-price">{{item.salePrice}}</div>
                       <div class="btn-area">
-                        <a href="javascript:;" class="btn btn--m">加入购物车</a>
+                        <a href="javascript:;" class="btn btn--m" @click="addCart(item.productId)">加入购物车</a>
                       </div>
                     </div>
                   </li>
                 </ul>
                 <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="20">
-                  加载中...
+                  <img src="./../assets/loading-spinning-bubbles.svg" v-show="loading"/>
                 </div>
               </div>
             </div>
@@ -78,7 +78,9 @@
           sortFlag:true,
           pageNum:1,
           pageSize:8,
-          busy:true
+          busy:true,
+          loading:false,
+          priceChecked:'all',
         }
       },
         name: "GoodsList",
@@ -96,12 +98,15 @@
             let param={
               pageNum:this.pageNum,
               pageSize:this.pageSize,
-              sort:this.sortFlag?1:-1
+              sort:this.sortFlag?1:-1,
+              priceLevel:this.priceChecked
             };
+            this.loading=true;
             axios.get('/goods',{
               params:param
             }).then(res=>{
               let goods=res.data;
+              this.loading=false;
               if (flag){
                 this.goodsList=this.goodsList.concat(goods.result.list);
                 if (goods.result.count===0){
@@ -121,13 +126,29 @@
             this.pageNum=1;
             this.getGoodsList(false);
           },
+        setPriceFilter(index){
+          this.priceChecked = index;
+          this.pageNum = 1;
+          this.getGoodsList(false);
+        },
           loadMore(){
             this.busy=true;
             setTimeout(() => {
               this.pageNum++;
               this.getGoodsList(true);
             }, 500);
-          }
+          },
+        addCart(productId){
+            axios.post("/goods/addCart",{
+              productId:productId
+            }).then((res)=>{
+              if (res.status===1){
+                alert("加入购物车成功");
+              }else {
+                alert("失败");
+              }
+            })
+        }
       }
     }
 </script>

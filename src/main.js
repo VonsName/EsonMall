@@ -4,7 +4,7 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import VueLazyLoad from 'vue-lazyload'
-import infiniteScroll from 'vue-infinite-iscroll'
+import infiniteScroll from 'vue-infinite-scroll'
 Vue.config.productionTip = false;
 
 Vue.use(VueLazyLoad,{

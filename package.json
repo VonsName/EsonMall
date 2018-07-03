@@ -13,6 +13,7 @@
     "axios": "^0.18.0",
     "vue": "^2.5.2",
     "vue-infinite-iscroll": "0.0.8",
+    "vue-infinite-scroll": "^2.0.2",
     "vue-lazyload": "^1.2.6",
     "vue-router": "^3.0.1"
   },
