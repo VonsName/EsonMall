@@ -28,7 +28,7 @@
             <div class="navbar-menu-container">
               <!--<a href="/" class="navbar-link">我的账户</a>-->
               <span class="navbar-link"></span>
-              <a href="javascript:void(0)" @click="loginModalFlag=true">Login</a>
+              <a href="javascript:void(0)" @click="loginModalFlag=true"><span>{{nickName}}</span>  Login</a>
               <a href="javascript:void(0)" @click="logout">Logout</a>
               <div class="navbar-cart-container">
                 <span class="navbar-cart-count"></span>
@@ -158,10 +158,22 @@
             userName:"",
             userPwd:"",
             errorTip:false,
-            loginModalFlag:false
+            loginModalFlag:false,
+            nickName:""
           }
         },
+      mounted(){
+        this.checkLogin();
+      },
       methods:{
+          checkLogin(){
+            axios.get("/users/checkLogin").then((res)=>{
+              let resp=res.data;
+              if (resp.Status==="1"){
+                  this.nickName=resp.result;
+              }
+            })
+          },
           login(){
             if (!this.userName||!this.userPwd){
               this.errorTip=true;
