@@ -5,8 +5,13 @@ import App from './App'
 import router from './router'
 import VueLazyLoad from 'vue-lazyload'
 import infiniteScroll from 'vue-infinite-scroll'
+
+//如果是导入带有名字的导出组件 必须使用{}
+import  {currency} from './util/currency'
 Vue.config.productionTip = false;
 
+
+Vue.filter("currency",currency);
 Vue.use(VueLazyLoad,{
   loading:"/static/loading-svg/loading-bars.svg"
 });

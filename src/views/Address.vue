@@ -176,7 +176,7 @@
               });
           },
           expand(){
-              if(this.limit==3){
+              if(this.limit===3){
                 this.limit = this.addressList.length;
               }else{
                 this.limit = 3;

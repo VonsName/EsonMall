@@ -76,7 +76,7 @@
                   </div>
                 </div>
                 <div class="cart-tab-2">
-                  <div class="item-price">{{item.salePrice}}</div>
+                  <div class="item-price">{{item.salePrice  | currency('$')}}</div>
                 </div>
                 <div class="cart-tab-3">
                   <div class="item-quantity">
@@ -90,7 +90,7 @@
                   </div>
                 </div>
                 <div class="cart-tab-4">
-                  <div class="item-price-total">{{(item.productNum*item.salePrice)}}</div>
+                  <div class="item-price-total">{{(item.productNum*item.salePrice)  | currency('$')}}</div>
                 </div>
                 <div class="cart-tab-5">
                   <div class="cart-item-opration">
@@ -109,21 +109,21 @@
           <div class="cart-foot-inner">
             <div class="cart-foot-l">
               <div class="item-all-check">
-                <!--<a href="javascipt:;" @click="toggleCheckAll">
+                <a href="javascipt:;" @click="toggleCheckAll">
                   <span class="checkbox-btn item-check-btn" v-bind:class="{'check':checkAllFlag}">
                       <svg class="icon icon-ok"><use xlink:href="#icon-ok"/></svg>
                   </span>
                   <span>Select all</span>
-                </a>-->
+                </a>
               </div>
             </div>
             <div class="cart-foot-r">
               <div class="item-total">
-                <!--Item total: <span class="total-price">{{totalPrice|currency('$')}}</span>-->
+                Item total: <span class="total-price">{{totalPrice | currency('$')}}</span>
               </div>
-              <!--<div class="btn-wrap">-->
-                <!--<a class="btn btn&#45;&#45;red" v-bind:class="{'btn&#45;&#45;dis':checkedCount==0}" @click="checkOut">Checkout</a>-->
-              <!--</div>-->
+              <div class="btn-wrap">
+                <a class="btn btn--red" v-bind:class="{'btn--dis':checkedCount===0}" @click="checkOut">Checkout</a>
+              </div>
             </div>
           </div>
         </div>
@@ -134,6 +134,20 @@
       <div slot="btnGroup">
         <a class="btn btn--m" href="javascript:;" @click="delCart">确认</a>
         <a class="btn btn--m btn--red" href="javascript:;" @click="modalConfirm = false">关闭</a>
+      </div>
+    </Modal>
+    <Modal :mdShow="editConfirm" @close="closeModal">
+      <p slot="message">添加商品成功</p>
+      <div slot="btnGroup">
+        <a class="btn btn--m" href="javascript:;" @click="editConfirm=false">确认</a>
+        <a class="btn btn--m btn--red" href="javascript:;" @click="editConfirm = false">关闭</a>
+      </div>
+    </Modal>
+    <Modal :mdShow="editFail" @close="closeModal">
+      <p slot="message">添加商品失败</p>
+      <div slot="btnGroup">
+        <a class="btn btn--m" href="javascript:;" @click="editFail=false">确认</a>
+        <a class="btn btn--m btn--red" href="javascript:;" @click="editFail = false">关闭</a>
       </div>
     </Modal>
     <nav-footer></nav-footer>
@@ -170,6 +184,7 @@
     import NavBread from '@/components/NavBread'
     import Modal from '@/components/Modal'
     import axios from 'axios'
+    import {currency} from '@/util/currency'
 
     //import {currency} from './../util/currency'
 
@@ -179,12 +194,44 @@
           cartList:[],
           mdShow:false,
           modalConfirm:false,
-          productId:""
+          productId:"",
+          editConfirm:false,
+          editFail:false
         }
       },
       //组件初始化完以后就会调用mounted()
       mounted(){
         this.init();
+      },
+
+      //局部过滤器
+     /* filters:{
+        currency:currency
+      },*/
+      //实时计算
+      computed:{
+        checkAllFlag(){
+          return this.checkedCount===this.cartList.length;
+        },
+        //实时计算
+        checkedCount(){
+          let i=0;
+          this.cartList.forEach((item)=>{
+            if (item.checked==='1'){
+              i++;
+            }
+          });
+          return i;
+        },
+        totalPrice(){
+          let money=0;
+          this.cartList.forEach((item)=>{
+            if (item.checked==='1'){
+              money+=parseFloat(item.salePrice)*parseInt(item.productNum);
+            }
+          });
+          return money;
+        }
       },
       components:{
         NavHeader,
@@ -201,24 +248,73 @@
         },
         closeModal(){
           this.modalConfirm=false;
+          this.editConfirm=false;
+          this.editFail=false;
         },
         delCartConfirm(item){
           this.modalConfirm=true;
           this.productId=item.productId;
         },
         delCart(){
-          axios.post("users/cart/del",{
+          axios.post("/users/cart/del",{
             productId:this.productId
           }).then((response)=>{
             let data1 = response.data;
             if (data1.Status==='1'){
               this.modalConfirm=false;
               this.init();
-              alert(data1.result);
+              //alert(data1.result);
             } else {
-              alert(data1.result);
+              //alert(data1.result);
             }
           })
+        },
+        editCart(op,item){
+          if (op==='add'){
+            item.productNum++;
+          } else if (op==='minu') {
+            if (item.productNum>1){
+              item.productNum--;
+            }
+          }else if (op==='checked'){
+            if (item.checked==='1'){
+              item.checked='0';
+            } else {
+              item.checked='1';
+            }
+
+          }
+          axios.post("/users/cart/edit",{
+            productId:item.productId,
+            productNum:item.productNum,
+            check:item.checked
+          }).then((res)=>{
+            let data1 = res.data;
+            if (data1.Status==="1"){
+              this.editConfirm=true;
+              this.init();
+            }else {
+             this.editFail=true;
+             this.init();
+            }
+          }).catch((res)=>{
+            this.editFail=true;
+            this.init();
+          })
+        },
+        toggleCheckAll(){
+          let flag=this.checkAllFlag;
+          this.checkAllFlag=!flag;
+          this.cartList.forEach((item)=>{
+            item.checked=this.checkAllFlag;
+          });
+        },
+        checkOut(){
+          if (this.checkedCount>0) {
+            this.$router.push({
+              path:"/address"
+            })
+          }
         }
       }
     }
