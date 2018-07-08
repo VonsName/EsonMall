@@ -167,6 +167,7 @@
               productId:productId
             }).then((res)=>{
                if (res.data.Status==="1"){
+                 this.$store.commit('updateCartCount',1);
                  this.mdShowCart=true;
                }else {
                  this.mdShow=true;

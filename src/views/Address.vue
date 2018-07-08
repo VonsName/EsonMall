@@ -60,7 +60,7 @@
             <div class="addr-list-wrap">
               <div class="addr-list">
                 <ul>
-                  <li v-for="(item,index) in addressListFilter" v-bind:class="{'check':checkIndex==index}" @click="checkIndex=index;selectedAddrId=item.addressId">
+                  <li v-for="(item,index) in addressListFilter" v-bind:class="{'check':checkIndex===index}" @click="checkIndex=index;selectedAddrId=item.addressId">
                     <dl>
                       <dt>{{item.userName}}</dt>
                       <dd class="address">{{item.streetName}}</dd>
@@ -158,6 +158,7 @@
       },
       computed:{
         addressListFilter(){
+          //splice()  删除 slice() 截取
           return this.addressList.slice(0,this.limit);
         }
       },
@@ -183,11 +184,11 @@
               }
           },
           setDefault(addressId){
-              axios.post("/users/setDefault",{
+              axios.post("/users/address/setDefault",{
                 addressId:addressId
               }).then((response)=>{
                   let res = response.data;
-                  if(res.status=='0'){
+                  if(res.Status==='1'){
                      console.log("set default");
                      this.init();
                   }
@@ -205,7 +206,7 @@
               addressId:this.addressId
             }).then((response)=>{
                 let res = response.data;
-                if(res.status=="0"){
+                if(res.Status==="1"){
                   console.log("del suc");
                   this.isMdShow = false;
                   this.init();

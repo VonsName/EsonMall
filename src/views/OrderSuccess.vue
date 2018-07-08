@@ -34,6 +34,20 @@
           </div>
         </div>
       </div>
+      <Modal :mdShow="orderNull" @close="closeModal">
+        <p slot="message">{{orderNullMessage}}</p>
+        <div slot="btnGroup">
+          <a class="btn btn--m" href="javascript:;" @click="orderNull=false">确认</a>
+          <a class="btn btn--m btn--red" href="javascript:;" @click="orderNull = false">关闭</a>
+        </div>
+      </Modal>
+      <Modal :mdShow="orderFail" @close="closeModal">
+        <p slot="message">{{orderFailMessage}}</p>
+        <div slot="btnGroup">
+          <a class="btn btn--m" href="javascript:;" @click="orderFail=false">确认</a>
+          <a class="btn btn--m btn--red" href="javascript:;" @click="orderFail = false">关闭</a>
+        </div>
+      </Modal>
       <nav-footer></nav-footer>
     </div>
 </template>
@@ -42,24 +56,36 @@
     import NavFooter from './../components/NavFooter'
     import NavBread from './../components/NavBread'
     import {currency} from './../util/currency'
+    import Modal from './../components/Modal'
     import axios from 'axios'
     export default{
         data(){
             return{
                 orderId:'',
-                orderTotal:0
+                orderTotal:0,
+                orderNull:false,
+                orderFail:false,
+                orderNullMessage:"",
+                orderFailMessage:""
             }
         },
         components:{
           NavHeader,
           NavFooter,
-          NavBread
+          NavBread,
+          Modal
         },
         filters:{
           currency:currency
         },
+        methods:{
+          closeModal(){
+            this.orderNull=false;
+            this.orderFail=false;
+          },
+        },
         mounted(){
-            var orderId = this.$route.query.orderId;
+            let orderId = this.$route.query.orderId;
             console.log("orderId:"+orderId);
             if(!orderId){
               return;
@@ -70,9 +96,15 @@
                 }
             }).then((response)=>{
                 let res = response.data;
-                if(res.status=='0'){
+                if(res.Status==='1'){
                     this.orderId = orderId;
                     this.orderTotal = res.result.orderTotal;
+                }else if (res.Status==='3'){
+                    this.orderNullMessage=res.msg;
+                    this.orderNull=true;
+                }else {
+                    this.orderFailMessage=res.msg;
+                    this.orderFail=true;
                 }
             });
         }

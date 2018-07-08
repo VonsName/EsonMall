@@ -55,7 +55,7 @@
               </ul>
             </div>
             <ul class="cart-item-list">
-              <li v-for="item in cartList" v-if="item.checked=='1'">
+              <li v-for="item in cartList" v-if="item.checked==='1'">
                 <div class="cart-tab-1">
                   <div class="cart-item-pic">
                     <img v-lazy="'/static/'+item.productImage" :alt="item.productName">
@@ -162,7 +162,7 @@
                 this.cartList = res.result;
 
                 this.cartList.forEach((item)=>{
-                    if(item.checked=='1'){
+                    if(item.checked==='1'){
                         this.subTotal += item.salePrice*item.productNum;
                     }
                 });
@@ -171,13 +171,13 @@
             });
          },
           payMent(){
-              var addressId = this.$route.query.addressId;
+              let addressId = this.$route.query.addressId;
               axios.post("/users/payMent",{
                 addressId:addressId,
                 orderTotal:this.orderTotal
               }).then((response)=>{
                   let res = response.data;
-                  if(res.status=="0"){
+                  if(res.Status==="1"){
                       this.$router.push({
                           path:'/orderSuccess?orderId='+res.result.orderId
                       })

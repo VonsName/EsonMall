@@ -196,7 +196,9 @@
           modalConfirm:false,
           productId:"",
           editConfirm:false,
-          editFail:false
+          editFail:false,
+          productNum:0,
+          delItem:''
         }
       },
       //组件初始化完以后就会调用mounted()
@@ -253,7 +255,9 @@
         },
         delCartConfirm(item){
           this.modalConfirm=true;
+          this.delItem=item;
           this.productId=item.productId;
+          this.productNum=item.productNum;
         },
         delCart(){
           axios.post("/users/cart/del",{
@@ -262,27 +266,28 @@
             let data1 = response.data;
             if (data1.Status==='1'){
               this.modalConfirm=false;
+              this.$store.commit('updateCartCount',-this.productNum);
               this.init();
-              //alert(data1.result);
             } else {
-              //alert(data1.result);
+              console.log('删除商品失败');
             }
           })
         },
         editCart(op,item){
           if (op==='add'){
             item.productNum++;
+            this.$store.commit('updateCartCount',+1);
           } else if (op==='minu') {
             if (item.productNum>1){
               item.productNum--;
             }
+            this.$store.commit('updateCartCount',-1);
           }else if (op==='checked'){
             if (item.checked==='1'){
               item.checked='0';
             } else {
               item.checked='1';
             }
-
           }
           axios.post("/users/cart/edit",{
             productId:item.productId,

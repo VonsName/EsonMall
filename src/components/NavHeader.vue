@@ -27,11 +27,11 @@
           <div class="navbar-right-container" style="display: flex;">
             <div class="navbar-menu-container">
               <!--<a href="/" class="navbar-link">我的账户</a>-->
-              <span class="navbar-link"></span>
-              <a href="javascript:void(0)" @click="loginModalFlag=true"><span>{{nickName}}</span>  Login</a>
+              <span class="navbar-link" v-text="nickName" v-if="nickName"></span>
+              <a href="javascript:void(0)" @click="loginModalFlag=true" v-if="!nickName">Login</a>
               <a href="javascript:void(0)" @click="logout">Logout</a>
               <div class="navbar-cart-container">
-                <span class="navbar-cart-count"></span>
+                <span class="navbar-cart-count">{{cartCount}}</span>
                 <a class="navbar-link navbar-cart-link" href="/#/cart">
                   <svg class="navbar-cart-logo">
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -155,13 +155,22 @@
     export default {
         data(){
           return{
-            userName:"",
+            userName:'',
             userPwd:"",
             errorTip:false,
             loginModalFlag:false,
-            nickName:""
+            //nickName:""
           }
         },
+      computed:{
+        ...mapState(['nickName','cartCount'])
+       /* nickName(){
+          return this.$store.state.nickName;
+        },
+        cartCount(){
+          return this.$store.state.cartCount;
+        }*/
+      },
       mounted(){
         this.checkLogin();
       },
@@ -169,9 +178,16 @@
           checkLogin(){
             axios.get("/users/checkLogin").then((res)=>{
               let resp=res.data;
-              if (resp.Status==="1"){
-                  this.nickName=resp.result;
-              }
+               if (resp.Status==="1"){
+              //     this.nickName=resp.result;
+                 this.$store.commit('updateUserInfo',resp.result);
+                 this.getCartCount();
+                 this.loginModalFlag=false;
+               }/*else {
+                 if (this.$route.path!=='/goods'){
+                   this.$router.push('/goods')
+                 }
+               }*/
             })
           },
           login(){
@@ -185,11 +201,13 @@
             }).then((res)=>{
               let result=res.data;
               if (result.Status==="1"){
-                this.errorTip=true;
-                this.loginModalFlag=false;
-                alert("登陆成功");
-              }else {
                 this.errorTip=false;
+                this.loginModalFlag=false;
+                this.$store.commit('updateUserInfo',result.result.userName);
+                this.getCartCount();
+              }else {
+                this.errorTip=true;
+                this.loginModalFlag=true;
               }
             }).catch((err)=>{
               console.log(err);
@@ -197,10 +215,16 @@
           },
         logout(){
             axios.get("/users/logout").then((res)=>{
-              let result=res.data;
-              if (result.Status==="1"){
-                alert("登出成功");
+              if (res.data.Status==="1"){
+                this.$store.commit('updateUserInfo','') ;
+                this.$store.commit('updateCartCount',0) ;
               }
+            })
+        },
+        getCartCount(){
+            axios.get('/users/getCartCount').then((res)=>{
+              let cartCount = res.data.result.cartCount;
+              this.$store.commit('initCartCount',cartCount);
             })
         }
       }
